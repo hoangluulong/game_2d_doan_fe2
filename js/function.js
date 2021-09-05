@@ -22,6 +22,7 @@ const uImg = {
     IMG_NV_5: "./image/nv_5.png",
     IMG_NV_NHAY: "./image/nv_nhay.png",
     VAT_CAN: "./image/thung_go.jpg",
+    VAT_CAN1: "./image/vatcan1.png",
     BACKGROUND: "./image/bg.jpg",
     TIEN_VANG: "./image/tien_vang.png",
 }
@@ -106,7 +107,7 @@ class NhanVat {
         }
         this.altitude--;
         this.cao--;
-        this.statusJump = setTimeout(this.goDown.bind(this), settings.TOC_DO_NHAY);
+        this.statusJump = setTimeout(this.goDown.bind(this), settings.TOC_DO_NHAY + 3);
         // this.statusJump = setTimeout(this.goDown.bind(this), 350);
     }
 
@@ -149,19 +150,19 @@ class NhanVat {
 // Vật cản
 class VatCan {
     constructor() {
-        this.height = 7;
-        this.width = 7;
+        this.height = 10;
+        this.width = 10;
         this.left = 200;
         this.distance = 0; //Khoảng cách
 
         this.el = document.createElement('div');
         this.el.style.position = 'absolute';
-        this.el.style.top = `34vmin`;
+        this.el.style.top = `32vmin`;
         this.el.style.zIndex = 9991;
         this.el.style.left = getSize(this.left);
         this.el.style.height = getSize(this.height);
         this.el.style.width = getSize(this.width);
-        this.el.innerHTML = this.srcImage(uImg.VAT_CAN);
+        this.el.innerHTML = this.srcImage(uImg.VAT_CAN1);
     }
 
     //Di chuyển
@@ -186,6 +187,7 @@ class TienVang {
         this.width = 7;
         this.left = 220;
         this.distance = 0; //Khoảng cách
+        this.diem = false;
 
         this.loai = this.getRandomInt(0, 2);
         this.el = document.createElement('div');
@@ -286,11 +288,14 @@ class KhungHinh {
         this.el.style.height = getSize(this.height);
         this.el.style.width = getSize(this.width);
         this.el.style.overflow = 'hidden';
-        // this.el.style.backgroundImage = "url('../image/bg.jpg')";
         this.el.innerHTML += `<div class="bg">
-                                        <img src="${uImg.BACKGROUND}" alt="background">
-                                    </div>`;
-        el.appendChild(this.el)
+        <img src="${uImg.BACKGROUND}" alt="background">
+        </div>`;
+        el.appendChild(this.el);
+    }
+
+    init() {
+        
     }
 
     add(child) {
@@ -299,11 +304,11 @@ class KhungHinh {
 }
 
 //Điếm số
-const SCORE_KEY = 'TREX_HIGHSCORE'
+const SCORE_KEY = 'DIEM_CAO_NHAT';
 class DiemSo {
     constructor() {
         this.score = 0; //Điểm
-        this.highscore = localStorage.getItem(SCORE_KEY) || 0 ;//Điểm cao
+        this.highscore = localStorage.getItem(SCORE_KEY) || 0 ;//Điểm cao nhất
 
         this.el = document.createElement('div');
         this.el.style.position = 'absolute';
@@ -315,7 +320,6 @@ class DiemSo {
 
     //Tăng điểm
     countUp() {
-        console.log("a");
         this.score++;
     }
 
@@ -328,7 +332,31 @@ class DiemSo {
 
     //Chạy bảng điểm
     render() {
-        this.el.innerHTML = `SĐiểm số: ${this.score} | Kỉ lục: ${this.highscore}`;
+        this.el.innerHTML = `Điểm số: ${this.score} | Kỉ lục: ${this.highscore}`;
+    }
+}
+
+class HienThiDiemCong {
+    constructor() {
+        this.height = 10;
+        this.width = 20;
+        this.left = 88;
+
+        this.el = document.createElement('div');
+        this.el.style.position = 'absolute';
+        this.el.style.top = `10vmin`;
+        this.el.style.zIndex = -1;
+        this.el.style.left = getSize(this.left);
+        this.el.style.height = getSize(this.height);
+        this.el.style.width = getSize(this.width);
+        this.el.innerHTML = '<p class="diem-cong">+ 30</p>';
+    }
+
+    setZIndex () {
+        this.el.style.zIndex = 9998;
+        setTimeout(() => {
+            this.el.style.zIndex = -1;
+        }, 500);
     }
 }
 
@@ -349,6 +377,9 @@ class Game {
         this.vangs = [];
         this.loop = null; //Vòng 1
         this.loop2 = null;
+        this.loopVatCan = null;
+        this.loopVang = null;
+        this.loopCay = null;
 
         this.audio1.src = './audio/an_vang.mp4';
 
@@ -360,6 +391,7 @@ class Game {
         this.duongchay = new DuongChay();
         this.nv = new NhanVat(this.audio);
         this.diem = new DiemSo();
+        this.hienthemdiem = new HienThiDiemCong();
 
         this.khunghinh.add(this.cay);
         this.khunghinh.add(this.duongchay);
@@ -369,6 +401,9 @@ class Game {
         this.khunghinh.add(this.Kho);
         this.khunghinh.add(this.de);
         this.khunghinh.add(this.diem);
+        this.khunghinh.add(this.hienthemdiem);
+
+        this.diem.render();
         this.startGame = document.querySelector('.start');
         this.initListeners();
     }
@@ -387,7 +422,7 @@ class Game {
 
     // Sự kiện khi ấn space
     handleInput(event) {
-        if (event.key === ' ' && this.statusStop == false && this.nv.sJump == false && this.nv.statusRun == true) {
+        if (event.key === ' ' &&  this.nv.sJump == false && this.nv.statusRun == true) {//this.statusStop == false &&
             this.audio.currentTime = 0;
             this.audio.src = './audio/nhay_3.wav';
             this.audio.loop = false;
@@ -403,8 +438,9 @@ class Game {
         this.khunghinh.add(foe);
         this.foes.push(foe);
         foe.move();
+        console.log("a");
         var time = this.getRandomInt(1200, 2500);
-        setTimeout(this.generateVatCan.bind(this), time);
+        this.loopVatCan = setTimeout(this.generateVatCan.bind(this), time);
     }
 
     generateCay() {
@@ -415,7 +451,7 @@ class Game {
         cay.move();
 
         var time = this.getRandomInt(10000, 15000);
-        setTimeout(this.generateCay.bind(this), time);
+        this.loopCay = setTimeout(this.generateCay.bind(this), time);
     }
 
     generateVang() {
@@ -423,10 +459,10 @@ class Game {
         const vang = new TienVang();
         this.khunghinh.add(vang);
         this.vangs.push(vang);
-        vang.move();
 
+        vang.move();
         var time = this.getRandomInt(1000, 2000);
-        setTimeout(this.generateVang.bind(this), time);
+        this.loopVang = setTimeout(this.generateVang.bind(this), time);
     }
 
     // thành tích
@@ -451,12 +487,22 @@ class Game {
                     vang.el.innerHTML = '';
                     this.audio1.currentTime = 0;
                     this.audio1.play();
+                    this.hienthemdiem.setZIndex();
+                    if (vang.diem == false){
+                        this.diem.score += 30;
+                        vang.diem = true;
+                    }
                 }
             } else {
                 if (this.collision2(this.nv, vang)) {
                     vang.el.innerHTML = '';
                     this.audio1.currentTime = 0;
                     this.audio1.play();
+                    this.hienthemdiem.setZIndex();
+                    if (vang.diem == false){
+                        this.diem.score += 30;
+                        vang.diem = true;
+                    }
                 }
             }
         });
@@ -472,9 +518,9 @@ class Game {
     }
 
     addScore() {
-        if (this.loop === null) return
-        this.diem.countUp()
-        setTimeout(this.addScore.bind(this), 500)
+        if (this.loop === null) return;
+        this.diem.countUp();
+        setTimeout(this.addScore.bind(this), 1);
     }
 
     //Bắt đầu trò chơi
@@ -495,19 +541,84 @@ class Game {
     //Kết thúc
     stop() {
         this.statusStop = true;
+        this.nv.sJump == false
         this.diem.save()
         this.audio.currentTime = 0;
         this.audio.src = './audio/game_over.mp3';
         this.audio.loop = false;
         this.audio.play();
         clearInterval(this.loop);
+        clearInterval(this.loop2);
         clearInterval(this.nv.timeRun);
         clearTimeout(this.nv.timeGoUp);
         clearTimeout(this.nv.statusJump);
-        // this.nv.statusRun == false;
+        this.nv.statusRun == true;
         this.nv.el.innerHTML = this.nv.srcImage(uImg.IMG_NV_4);
         setTimeout(() => { this.nv.el.innerHTML = this.nv.srcImage(uImg.IMG_NV_5); }, 1000);
         this.loop = null;
+        this.loop2 = null;
+        this.restart();
+    }
+
+    restart() {
+        // this.audio.src = './audio/chay_bo.mp3';
+
+        while (this.khunghinh.el.firstChild) {
+            this.khunghinh.el.removeChild(this.khunghinh.el.firstChild);
+        }
+
+        this.khunghinh.el.innerHTML += `<div class="bg">
+        <img src="${uImg.BACKGROUND}" alt="background">
+        </div>`;
+        
+        this.reset();
+
+        this.batdau = new BatDau();
+        this.Kho = new Kho(this.leve);
+        this.de = new De(this.leve);
+        this.cay = new Cay();
+        this.duongchay = new DuongChay();
+        this.nv = new NhanVat(this.audio);
+        this.diem = new DiemSo();
+        this.hienthemdiem = new HienThiDiemCong();
+
+        this.khunghinh.add(this.cay);
+        this.khunghinh.add(this.duongchay);
+        this.khunghinh.add(this.nv);
+        this.khunghinh.add(this.batdau);
+        this.khunghinh.add(this.batdau);
+        this.khunghinh.add(this.Kho);
+        this.khunghinh.add(this.de);
+        this.khunghinh.add(this.diem);
+        this.khunghinh.add(this.hienthemdiem);
+
+        this.diem.render();
+        this.startGame = document.querySelector('.start');
+        this.initListeners();
+    }
+
+    reset(){
+        clearTimeout(this.loopVatCan);
+        clearTimeout(this.loopVang);
+        clearTimeout(this.loopCay);
+        this.loopVatCan = null;
+        this.loopVang = null;
+        this.loopVang = null;
+        this.foes = []; //Mảng vật cản
+        this.cays = [];
+        this.vangs = [];
+
+        this.loop = null; //Vòng 1
+        this.loop2 = null;
+
+        this.batdau = null;
+        this.Kho = null;
+        this.de = null;
+        this.cay = null;
+        this.duongchay =null;
+        this.nv = null;
+        this.diem = null;
+        this.hienthemdiem = null;
     }
 
     //Va chạm
@@ -633,4 +744,4 @@ class Kho {
 var leve = 1;
 const g = new Game("#app", "myAudio", leve);
 
-g.init();
+var games = g.init();
