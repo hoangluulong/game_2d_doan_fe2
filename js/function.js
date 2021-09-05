@@ -366,6 +366,7 @@ class Game {
         this.audio = document.getElementById(audio);
         this.audio1 = document.getElementById("audioVang");
         this.startGame = null;
+        this.choilaigame = null;
         this.lv_kho = null;
         this.lv_de = null;
     }
@@ -392,6 +393,7 @@ class Game {
         this.nv = new NhanVat(this.audio);
         this.diem = new DiemSo();
         this.hienthemdiem = new HienThiDiemCong();
+        this.choilai = new ChoiLai();
 
         this.khunghinh.add(this.cay);
         this.khunghinh.add(this.duongchay);
@@ -402,9 +404,11 @@ class Game {
         this.khunghinh.add(this.de);
         this.khunghinh.add(this.diem);
         this.khunghinh.add(this.hienthemdiem);
+        this.khunghinh.add(this.choilai);
 
         this.diem.render();
         this.startGame = document.querySelector('.start');
+        this.choilaigame = document.querySelector('.choilai');
         this.initListeners();
     }
 
@@ -418,11 +422,14 @@ class Game {
                 this.start();
             }
         });
+        this.choilaigame.addEventListener('click', () => {
+            this.restart();
+        });
     }
 
     // Sự kiện khi ấn space
     handleInput(event) {
-        if (event.key === ' ' &&  this.nv.sJump == false && this.nv.statusRun == true) {//this.statusStop == false &&
+        if (event.key === ' ' && this.statusStop == false && this.nv.sJump == false && this.nv.statusRun == true) {//
             this.audio.currentTime = 0;
             this.audio.src = './audio/nhay_3.wav';
             this.audio.loop = false;
@@ -541,8 +548,9 @@ class Game {
     //Kết thúc
     stop() {
         this.statusStop = true;
-        this.nv.sJump == false
-        this.diem.save()
+        this.nv.sJump == false;
+        this.choilai.zIndex = 9993;
+        this.diem.save();
         this.audio.currentTime = 0;
         this.audio.src = './audio/game_over.mp3';
         this.audio.loop = false;
@@ -557,7 +565,7 @@ class Game {
         setTimeout(() => { this.nv.el.innerHTML = this.nv.srcImage(uImg.IMG_NV_5); }, 1000);
         this.loop = null;
         this.loop2 = null;
-        this.restart();
+        this.choilai.el.style.zIndex = 9995;
     }
 
     restart() {
@@ -566,10 +574,12 @@ class Game {
         while (this.khunghinh.el.firstChild) {
             this.khunghinh.el.removeChild(this.khunghinh.el.firstChild);
         }
-
+        this.statusStop = false;
+        
         this.khunghinh.el.innerHTML += `<div class="bg">
         <img src="${uImg.BACKGROUND}" alt="background">
         </div>`;
+        this.audio.src = './audio/chay_bo.mp3';
         
         this.reset();
 
@@ -581,6 +591,7 @@ class Game {
         this.nv = new NhanVat(this.audio);
         this.diem = new DiemSo();
         this.hienthemdiem = new HienThiDiemCong();
+        this.choilai = new ChoiLai();
 
         this.khunghinh.add(this.cay);
         this.khunghinh.add(this.duongchay);
@@ -591,9 +602,11 @@ class Game {
         this.khunghinh.add(this.de);
         this.khunghinh.add(this.diem);
         this.khunghinh.add(this.hienthemdiem);
+        this.khunghinh.add(this.choilai);   
 
         this.diem.render();
         this.startGame = document.querySelector('.start');
+        this.choilaigame = document.querySelector('.choilai');
         this.initListeners();
     }
 
@@ -726,6 +739,36 @@ class Kho {
         this.el.style.width = getSize(this.width);
         if (leve == 1) { this.el.innerHTML = `<button class="start kho1">Khó</button>`; }
         else { this.el.innerHTML = `<button class="start kho">Khó</button>`; }
+    }
+
+    //Di chuyển
+    move() {
+        if (this.distance >= 200) return;
+        this.distance++;
+        setTimeout(this.move.bind(this), 1);
+    }
+
+    //Giảm x
+    render() {
+        this.el.style.transform = `translateY(-${getSize(this.distance)})`;
+    }
+}
+
+class ChoiLai {
+    constructor() {
+        this.left = 85;
+        this.height = 7;
+        this.width = 28;
+        this.distance = 0;
+
+        this.el = document.createElement('div');
+        this.el.style.position = 'absolute';
+        this.el.style.top = `25vmin`;
+        this.el.style.zIndex = -1;
+        this.el.style.left = getSize(this.left);
+        this.el.style.height = getSize(this.height);
+        this.el.style.width = getSize(this.width);
+        this.el.innerHTML = `<button class="start choilai">Chơi lại</button>`;
     }
 
     //Di chuyển
