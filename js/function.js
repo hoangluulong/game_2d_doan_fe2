@@ -1,11 +1,41 @@
+
+//Cấp độ dễ lv 1
 const settings = {
     DOT: 0.5,
     CHIEU_CAO_NHAY: 30,
-    TOC_DO_CHAY: 100,
-    TOC_DO_NHAY: 15,
-    TOC_DO_VAT_CAN: 20,
-    TOC_DO_CAY: 100,
+    TOC_DO_CHAY: 70,
+    TOC_DO_NHAY: 13,
+    TOC_DO_VAT_CAN: 15,
+    TOC_DO_CAY: 70,
 }
+
+
+/*
+//lv 2
+const settings = {
+    DOT: 0.5,
+    CHIEU_CAO_NHAY: 30,
+    TOC_DO_CHAY: 68,
+    TOC_DO_NHAY: 10,
+    TOC_DO_VAT_CAN: 13,
+    TOC_DO_CAY: 68,
+}
+*/
+
+/*
+//lv3
+const settings = {
+    DOT: 0.5,
+    CHIEU_CAO_NHAY: 30,
+    TOC_DO_CHAY: 65,
+    TOC_DO_NHAY: 8,
+    TOC_DO_VAT_CAN: 10,
+    TOC_DO_CAY: 65,
+}
+*/
+
+
+
 
 const theme = {
     PRIMARY: '	#FF0000',
@@ -37,6 +67,15 @@ const uTmgCay = [
     "./image/cay5.png",
     "./image/cay6.png",
     "./image/cay7.png",
+];
+
+const uTmgTrangTRi = [
+    "./image/trangtri1.png",
+    "./image/trangtri2.png",
+    "./image/trangtri3.png",
+    "./image/trangtri4.png",
+    "./image/trangtri5.png",
+    "./image/trangtri6.png",
 ];
 
 const getSize = size => {
@@ -108,6 +147,7 @@ class NhanVat {
         this.altitude--;
         this.cao--;
         this.statusJump = setTimeout(this.goDown.bind(this), settings.TOC_DO_NHAY + 3);
+        // this.statusJump = setTimeout(this.goDown.bind(this), settings.TOC_DO_NHAY);
         // this.statusJump = setTimeout(this.goDown.bind(this), 350);
     }
 
@@ -295,7 +335,7 @@ class KhungHinh {
     }
 
     init() {
-        
+
     }
 
     add(child) {
@@ -308,7 +348,7 @@ const SCORE_KEY = 'DIEM_CAO_NHAT';
 class DiemSo {
     constructor() {
         this.score = 0; //Điểm
-        this.highscore = localStorage.getItem(SCORE_KEY) || 0 ;//Điểm cao nhất
+        this.highscore = localStorage.getItem(SCORE_KEY) || 0;//Điểm cao nhất
 
         this.el = document.createElement('div');
         this.el.style.position = 'absolute';
@@ -352,7 +392,7 @@ class HienThiDiemCong {
         this.el.innerHTML = '<p class="diem-cong">+ 30</p>';
     }
 
-    setZIndex () {
+    setZIndex() {
         this.el.style.zIndex = 9998;
         setTimeout(() => {
             this.el.style.zIndex = -1;
@@ -376,11 +416,16 @@ class Game {
         this.foes = []; //Mảng vật cản
         this.cays = [];
         this.vangs = [];
+        this.trangtris = [];
         this.loop = null; //Vòng 1
         this.loop2 = null;
         this.loopVatCan = null;
         this.loopVang = null;
+        this.loopTrangTri = null;
         this.loopCay = null;
+        this.level = null;
+
+        this.time = 0;
 
         this.audio1.src = './audio/an_vang.mp4';
 
@@ -388,14 +433,12 @@ class Game {
         this.batdau = new BatDau();
         this.Kho = new Kho(this.leve);
         this.de = new De(this.leve);
-        this.cay = new Cay();
         this.duongchay = new DuongChay();
         this.nv = new NhanVat(this.audio);
         this.diem = new DiemSo();
         this.hienthemdiem = new HienThiDiemCong();
         this.choilai = new ChoiLai();
 
-        this.khunghinh.add(this.cay);
         this.khunghinh.add(this.duongchay);
         this.khunghinh.add(this.nv);
         this.khunghinh.add(this.batdau);
@@ -446,7 +489,8 @@ class Game {
         this.foes.push(foe);
         foe.move();
         console.log("a");
-        var time = this.getRandomInt(1200, 2500);
+        // var time = this.getRandomInt(1200, 2500); //vl 
+        var time = this.getRandomInt(700, 1000); //Lv
         this.loopVatCan = setTimeout(this.generateVatCan.bind(this), time);
     }
 
@@ -456,7 +500,6 @@ class Game {
         this.khunghinh.add(cay);
         this.cays.push(cay);
         cay.move();
-
         var time = this.getRandomInt(10000, 15000);
         this.loopCay = setTimeout(this.generateCay.bind(this), time);
     }
@@ -466,10 +509,20 @@ class Game {
         const vang = new TienVang();
         this.khunghinh.add(vang);
         this.vangs.push(vang);
-
         vang.move();
         var time = this.getRandomInt(1000, 2000);
         this.loopVang = setTimeout(this.generateVang.bind(this), time);
+    }
+
+    generateTrangTri() {
+        if (this.loop === null) return;
+        const trangtri = new vatTrangTri();
+        this.khunghinh.add(trangtri);
+        this.trangtris.push(trangtri);
+
+        trangtri.move();
+        var time = this.getRandomInt(2000, 5000);
+        this.loopTrangTri = setTimeout(this.generateTrangTri.bind(this), time);
     }
 
     // thành tích
@@ -487,6 +540,10 @@ class Game {
             cay.render();
         });
 
+        this.trangtris.forEach(trangtri => {
+            trangtri.render();
+        });
+
         this.vangs.forEach(vang => {
             vang.render();
             if (vang.loai == 1) {
@@ -495,7 +552,7 @@ class Game {
                     this.audio1.currentTime = 0;
                     this.audio1.play();
                     this.hienthemdiem.setZIndex();
-                    if (vang.diem == false){
+                    if (vang.diem == false) {
                         this.diem.score += 30;
                         vang.diem = true;
                     }
@@ -506,7 +563,7 @@ class Game {
                     this.audio1.currentTime = 0;
                     this.audio1.play();
                     this.hienthemdiem.setZIndex();
-                    if (vang.diem == false){
+                    if (vang.diem == false) {
                         this.diem.score += 30;
                         vang.diem = true;
                     }
@@ -530,8 +587,16 @@ class Game {
         setTimeout(this.addScore.bind(this), 1);
     }
 
+    tangLevel() {
+        // settings.TOC_DO_VAT_CAN -= 5;
+        // // settings.CHIEU_CAO_NHAY -= 0.5;
+        // settings.TOC_DO_CHAY -= 5;
+        // settings.TOC_DO_NHAY -= 0.3;
+    }
+
     //Bắt đầu trò chơi
     start() {
+        // this.level = setInterval(this.tangLevel.bind(this), 10000);
         this.nv.run();
         this.nv.statusRun == true;
         this.loop = setInterval(this.tick.bind(this), 5);
@@ -542,11 +607,13 @@ class Game {
         this.generateVatCan();
         this.generateVang();
         this.generateCay();
+        this.generateTrangTri();
         this.addScore();
     }
 
     //Kết thúc
     stop() {
+        clearInterval(this.level);
         this.statusStop = true;
         this.nv.sJump == false;
         this.choilai.zIndex = 9993;
@@ -565,6 +632,7 @@ class Game {
         setTimeout(() => { this.nv.el.innerHTML = this.nv.srcImage(uImg.IMG_NV_5); }, 1000);
         this.loop = null;
         this.loop2 = null;
+        this.level = null;
         this.choilai.el.style.zIndex = 9995;
     }
 
@@ -575,12 +643,12 @@ class Game {
             this.khunghinh.el.removeChild(this.khunghinh.el.firstChild);
         }
         this.statusStop = false;
-        
+
         this.khunghinh.el.innerHTML += `<div class="bg">
         <img src="${uImg.BACKGROUND}" alt="background">
         </div>`;
         this.audio.src = './audio/chay_bo.mp3';
-        
+
         this.reset();
 
         this.batdau = new BatDau();
@@ -602,7 +670,7 @@ class Game {
         this.khunghinh.add(this.de);
         this.khunghinh.add(this.diem);
         this.khunghinh.add(this.hienthemdiem);
-        this.khunghinh.add(this.choilai);   
+        this.khunghinh.add(this.choilai);
 
         this.diem.render();
         this.startGame = document.querySelector('.start');
@@ -610,16 +678,25 @@ class Game {
         this.initListeners();
     }
 
-    reset(){
+    reset() {
         clearTimeout(this.loopVatCan);
         clearTimeout(this.loopVang);
         clearTimeout(this.loopCay);
+        clearTimeout(this.loopTrangTri);
         this.loopVatCan = null;
         this.loopVang = null;
-        this.loopVang = null;
+        this.loopCay = null;
+        this.loopTrangTri = null;
         this.foes = []; //Mảng vật cản
         this.cays = [];
         this.vangs = [];
+        this.trangtris = [];
+
+        settings.CHIEU_CAO_NHAY = 30;
+        settings.TOC_DO_CHAY = 70;
+        settings.TOC_DO_NHAY = 13;
+        settings.TOC_DO_VAT_CAN = 15;
+
 
         this.loop = null; //Vòng 1
         this.loop2 = null;
@@ -628,7 +705,7 @@ class Game {
         this.Kho = null;
         this.de = null;
         this.cay = null;
-        this.duongchay =null;
+        this.duongchay = null;
         this.nv = null;
         this.diem = null;
         this.hienthemdiem = null;
@@ -781,6 +858,39 @@ class ChoiLai {
     //Giảm x
     render() {
         this.el.style.transform = `translateY(-${getSize(this.distance)})`;
+    }
+}
+
+class vatTrangTri {
+    constructor() {
+        this.height = 20;
+        this.width = 20;
+        this.left = 200;
+        this.distance = 0; //Khoảng cách
+
+        this.el = document.createElement('div');
+        this.el.style.position = 'absolute';
+        this.el.style.bottom = getSize(5);
+        this.el.style.zIndex = 9988;
+        this.el.style.left = getSize(this.left);
+        this.el.style.height = getSize(this.height);
+        this.el.style.width = getSize(this.width);
+        this.el.innerHTML = this.srcImage(uTmgTrangTRi[Math.floor(Math.random() * uTmgTrangTRi.length)]);
+    }
+
+    //Di chuyển
+    move() {
+        this.distance++;
+        setTimeout(this.move.bind(this), settings.TOC_DO_VAT_CAN);
+    }
+
+    //Giảm x
+    render() {
+        this.el.style.transform = `translateX(-${getSize(this.distance)})`;
+    }
+
+    srcImage(e) {
+        return `<img src="${e}" alt="trang trí ">`;
     }
 }
 
