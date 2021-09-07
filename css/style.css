@@ -43,14 +43,14 @@ img {
   box-shadow: 0 4px #999;
 }
 
-.kho1, .de1 {background-color: #cae4da;}
-.kho, .de {background-color: #04AA6D;}
+/* .kho1, .de1 {background-color: #cae4da;} */
+.kho, .de {background-color: #b9b9b0;}
 
 .batdau:hover {background-color: rebeccapurple;}
 .kho:hover {background-color: #66ac92; color: rgb(38, 0, 255)}
 .de:hover {background-color: #66ac92; color: rgb(38, 0, 255)}
-.kho1:hover {background-color: #66ac92; color: rgb(38, 0, 255)}
-.de1:hover {background-color: #66ac92; color: rgb(38, 0, 255)}
+/* .kho1:hover {background-color: #66ac92; color: rgb(38, 0, 255)}
+.de1:hover {background-color: #66ac92; color: rgb(38, 0, 255)} */
 
 .start:active {
   background-color: #3e8e41;

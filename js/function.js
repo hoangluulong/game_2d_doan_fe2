@@ -10,9 +10,16 @@ const settings = {
 }
 
 
-/*
+const settings1 = {
+    DOT: 0.5,
+    CHIEU_CAO_NHAY: 30,
+    TOC_DO_CHAY: 70,
+    TOC_DO_NHAY: 13,
+    TOC_DO_VAT_CAN: 15,
+    TOC_DO_CAY: 70,
+}
 //lv 2
-const settings = {
+const settings2 = {
     DOT: 0.5,
     CHIEU_CAO_NHAY: 30,
     TOC_DO_CHAY: 68,
@@ -20,11 +27,11 @@ const settings = {
     TOC_DO_VAT_CAN: 13,
     TOC_DO_CAY: 68,
 }
-*/
 
-/*
+
+
 //lv3
-const settings = {
+const settings3 = {
     DOT: 0.5,
     CHIEU_CAO_NHAY: 30,
     TOC_DO_CHAY: 65,
@@ -32,15 +39,15 @@ const settings = {
     TOC_DO_VAT_CAN: 10,
     TOC_DO_CAY: 65,
 }
-*/
-
-
 
 
 const theme = {
     PRIMARY: '	#FF0000',
     BACKGROUND: '#9999FF',
-    DUONGCHAY: '#000055'
+    DUONGCHAY: '#000055',
+    BUTTON_UN_COLOR: '#b9b9b0',
+    BUTTON_COLOR: '#04AA6D',
+
 }
 
 const uImg = {
@@ -209,6 +216,7 @@ class VatCan {
     move() {
         this.distance++;
         setTimeout(this.move.bind(this), settings.TOC_DO_VAT_CAN);
+        console.log("VV" + settings.TOC_DO_VAT_CAN);
     }
 
     //Giảm x
@@ -400,15 +408,17 @@ class HienThiDiemCong {
     }
 }
 
+const KEY_LEVEL = "KEY_LEVEL";
 class Game {
-    constructor(selector, audio, leve) {
+    constructor(selector, audio) {
         this.el = document.querySelector(selector);
         this.audio = document.getElementById(audio);
         this.audio1 = document.getElementById("audioVang");
         this.startGame = null;
         this.choilaigame = null;
-        this.lv_kho = null;
-        this.lv_de = null;
+        this.lv_de = document.querySelector('.de');
+        this.lv_kho = document.querySelector('.kho');
+        this.level = localStorage.getItem(KEY_LEVEL) || 1;
     }
 
     init() {
@@ -423,16 +433,15 @@ class Game {
         this.loopVang = null;
         this.loopTrangTri = null;
         this.loopCay = null;
-        this.level = null;
-
+        this.levelTime = null;
         this.time = 0;
-
+        
         this.audio1.src = './audio/an_vang.mp4';
 
         this.khunghinh = new KhungHinh(this.el);
         this.batdau = new BatDau();
-        this.Kho = new Kho(this.leve);
-        this.de = new De(this.leve);
+        this.Kho = new Kho(this.level);
+        this.de = new De(this.level);
         this.duongchay = new DuongChay();
         this.nv = new NhanVat(this.audio);
         this.diem = new DiemSo();
@@ -452,6 +461,17 @@ class Game {
         this.diem.render();
         this.startGame = document.querySelector('.start');
         this.choilaigame = document.querySelector('.choilai');
+        this.lv_de = document.querySelector('.de');
+        this.lv_kho = document.querySelector('.kho');
+
+        if(this.level == 1){
+            this.lv_de.style.background = theme.BUTTON_COLOR;
+            this.lv_kho.style.background = theme.BUTTON_UN_COLOR;
+        }else{
+            this.lv_kho.style.background = theme.BUTTON_COLOR;
+            this.lv_de.style.background = theme.BUTTON_UN_COLOR;
+        }
+
         this.initListeners();
     }
 
@@ -467,6 +487,20 @@ class Game {
         });
         this.choilaigame.addEventListener('click', () => {
             this.restart();
+        });
+
+        this.lv_kho.addEventListener('click', () => {
+            this.level = 2;
+            localStorage.setItem(KEY_LEVEL, this.level);
+            this.lv_kho.style.background = theme.BUTTON_COLOR;
+            this.lv_de.style.background = theme.BUTTON_UN_COLOR;
+        });
+
+        this.lv_de.addEventListener('click', () => {
+            this.level = 1;
+            localStorage.setItem(KEY_LEVEL, this.level);
+            this.lv_de.style.background = theme.BUTTON_COLOR;
+            this.lv_kho.style.background = theme.BUTTON_UN_COLOR;
         });
     }
 
@@ -488,9 +522,8 @@ class Game {
         this.khunghinh.add(foe);
         this.foes.push(foe);
         foe.move();
-        console.log("a");
-        // var time = this.getRandomInt(1200, 2500); //vl 
-        var time = this.getRandomInt(700, 1000); //Lv
+        var time = this.getRandomInt(1200, 2500); //vl
+        // var time = this.getRandomInt(700, 1000); //Lv
         this.loopVatCan = setTimeout(this.generateVatCan.bind(this), time);
     }
 
@@ -587,16 +620,24 @@ class Game {
         setTimeout(this.addScore.bind(this), 1);
     }
 
-    tangLevel() {
-        // settings.TOC_DO_VAT_CAN -= 5;
-        // // settings.CHIEU_CAO_NHAY -= 0.5;
-        // settings.TOC_DO_CHAY -= 5;
-        // settings.TOC_DO_NHAY -= 0.3;
+    setLevel() {
+        if (this.level == 1) {
+            settings.CHIEU_CAO_NHAY = settings1.CHIEU_CAO_NHAY;
+            settings.TOC_DO_CHAY = settings1.TOC_DO_CHAY;
+            settings.TOC_DO_VAT_CAN = settings1.TOC_DO_VAT_CAN;
+            settings.TOC_DO_CAY = settings1.TOC_DO_CAY;
+        }else{
+            settings.CHIEU_CAO_NHAY = settings2.CHIEU_CAO_NHAY;
+            settings.TOC_DO_CHAY = settings2.TOC_DO_CHAY;
+            settings.TOC_DO_VAT_CAN = settings2.TOC_DO_VAT_CAN;
+            settings.TOC_DO_CAY = settings2.TOC_DO_CAY;
+        }
     }
 
     //Bắt đầu trò chơi
     start() {
-        // this.level = setInterval(this.tangLevel.bind(this), 10000);
+        // this.levelTime = setInterval(this.tangLevel.bind(this), 10000);
+        this.setLevel();
         this.nv.run();
         this.nv.statusRun == true;
         this.loop = setInterval(this.tick.bind(this), 5);
@@ -613,7 +654,7 @@ class Game {
 
     //Kết thúc
     stop() {
-        clearInterval(this.level);
+        clearInterval(this.levelTime);
         this.statusStop = true;
         this.nv.sJump == false;
         this.choilai.zIndex = 9993;
@@ -632,7 +673,7 @@ class Game {
         setTimeout(() => { this.nv.el.innerHTML = this.nv.srcImage(uImg.IMG_NV_5); }, 1000);
         this.loop = null;
         this.loop2 = null;
-        this.level = null;
+        this.levelTime = null;
         this.choilai.el.style.zIndex = 9995;
     }
 
@@ -675,6 +716,18 @@ class Game {
         this.diem.render();
         this.startGame = document.querySelector('.start');
         this.choilaigame = document.querySelector('.choilai');
+        this.lv_de = document.querySelector('.de');
+        this.lv_kho = document.querySelector('.kho');
+
+        if(this.level == 1){
+            this.lv_de.style.background = theme.BUTTON_COLOR;
+            this.lv_kho.style.background = theme.BUTTON_UN_COLOR;
+            settings = settings1;
+        }else{
+            this.lv_kho.style.background = theme.BUTTON_COLOR;
+            this.lv_de.style.background = theme.BUTTON_UN_COLOR;
+            settings = settings2;
+        }
         this.initListeners();
     }
 
@@ -782,9 +835,7 @@ class De {
         this.el.style.left = getSize(this.left);
         this.el.style.height = getSize(this.height);
         this.el.style.width = getSize(this.width);
-        if (leve == 1) { this.el.innerHTML = `<button class="start de">Dễ</button>`; }
-        else { this.el.innerHTML = `<button class="start de1">Dễ</button>`; }
-
+        this.el.innerHTML = `<button class="start de">Dễ</button>`;
     }
 
     //Di chuyển
@@ -814,8 +865,7 @@ class Kho {
         this.el.style.left = getSize(this.left);
         this.el.style.height = getSize(this.height);
         this.el.style.width = getSize(this.width);
-        if (leve == 1) { this.el.innerHTML = `<button class="start kho1">Khó</button>`; }
-        else { this.el.innerHTML = `<button class="start kho">Khó</button>`; }
+        this.el.innerHTML = `<button class="start kho">Khó</button>`; 
     }
 
     //Di chuyển
@@ -894,7 +944,6 @@ class vatTrangTri {
     }
 }
 
-var leve = 1;
-const g = new Game("#app", "myAudio", leve);
+const g = new Game("#app", "myAudio");
 
 var games = g.init();
