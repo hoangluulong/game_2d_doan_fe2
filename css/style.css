@@ -66,3 +66,14 @@ img {
   font-size: 50px;
   color: crimson;
 }
+
+.skin {
+  width: 100%;
+  height: 100%;
+  /* color: hsl(61, 64%, 27%); */
+}
+
+.skin-bg{
+  width: 100%;
+  height: 100%;
+}
